@@ -20,7 +20,7 @@ namespace Admin
         MySqlConnection CONNECTION = new MySqlConnection();
         public string id = "", year = "", descrip = "", unit = "";
         public string updated_id = "", updated_year = "", updated_descrip = "", updated_unit = "";
-
+        int edited =0;
 
         private void connect_To_Database()
         {
@@ -109,6 +109,8 @@ namespace Admin
                 string Col_year = "',year='";
                 string Selected_id = id;
 
+                add_edited_Count();
+
                 string Col_VALUES = Col_id + updated_id + Col_desc + updated_descrip + Col_unit + updated_unit + Col_year + updated_year;
                 string QUERY = " UPDATE " + Table + " SET " + Col_VALUES + "' WHERE " + Col_id + Selected_id+"'";
 
@@ -116,6 +118,7 @@ namespace Admin
                 cmd.ExecuteNonQuery();
                 MessageBox.Show("Update successfully..", "Notice");
                 this.Close();
+
             }
             else
             {
@@ -126,6 +129,22 @@ namespace Admin
         bool is_Valid_ID(string newid)
         {
             string regexPattern = "^1[0-9]{3}$";
+            Regex regex = new Regex(regexPattern);
+            Match match = regex.Match(newid);
+
+            if (match.Success)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        bool is_Number(string newid)
+        {
+            string regexPattern = "^[0-9]+$";
             Regex regex = new Regex(regexPattern);
             Match match = regex.Match(newid);
 
@@ -159,6 +178,33 @@ namespace Admin
 
 
         }
+
+        void add_edited_Count()
+        {
+            get_no_of_Action();
+            string Table = "no_of_action ";
+            string Col_id = "edited='";
+            string QUERY = " UPDATE " + Table + " SET " + Col_id + ++edited + "'";
+            MySqlCommand cmd = new MySqlCommand(QUERY, CONNECTION);
+            cmd.ExecuteNonQuery();
+        }
+
+        void get_no_of_Action()
+        {
+            string Table = "no_of_action ";
+            string Col_id = "edited='";
+            string QUERY = "SELECT edited FROM " + Table;
+            MySqlCommand cmd = new MySqlCommand(QUERY, CONNECTION);
+            MySqlDataReader reader = cmd.ExecuteReader();
+
+            while (reader.Read())
+            {
+                edited = int.Parse(reader.GetString(0));
+            }
+            reader.Close();
+        }
+
+
 
 
         bool is_Unique_ID(string newid)
@@ -208,6 +254,11 @@ namespace Admin
 
         private void id_textbox_TextChanged(object sender, EventArgs e)
         {
+            if (!is_Number(id_textbox.Text))
+            {
+                id_textbox.ForeColor = Color.Red;
+                return;
+            }
             if (id == id_textbox.Text)
             {
                 id_textbox.ForeColor = Color.Orange;
@@ -247,7 +298,12 @@ namespace Admin
 
         private void cancel_button_Click(object sender, EventArgs e)
         {
-            this.Close();
+            DialogResult action = MessageBox.Show("Cancel the edited subject?", "Note", MessageBoxButtons.YesNo);
+            if (action == DialogResult.Yes)
+            {
+                this.Close();
+            }
+
         }
 
         private void panel2_Paint(object sender, PaintEventArgs e)

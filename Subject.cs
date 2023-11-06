@@ -18,8 +18,8 @@ namespace Admin
 
         MySqlConnection CONNECTION = new MySqlConnection();
         string id = "", year="", descrip="", unit="";
-        int total_subject = 0, total_Added = 0, total_deleted = 0; 
-
+        int total_subject = 0, total_Added = 0, total_deleted = 0;
+        int deleted = 0;
 
 
         private void connect_To_Database()
@@ -49,6 +49,7 @@ namespace Admin
         {
             total_subject = 0;
             subject_table.Rows.Clear();
+     
             string Table = "subject_tbl";
             string Col_id = "id,";
             string Col_description = "description,";
@@ -89,21 +90,42 @@ namespace Admin
                 string Table = "subject_tbl";
                 string Col_id = "id=";
                 string Selected_id = id;
-
+                add_deleted_Count();
                 string QUERY = " DELETE FROM " + Table + " WHERE " + Col_id + Selected_id;
                 MySqlCommand cmd = new MySqlCommand(QUERY, CONNECTION);
                 cmd.ExecuteNonQuery();
                 MessageBox.Show("Deleted successfully..", "Notice");
 
             }
-            else
-            {
-                MessageBox.Show("Deleted cancelled.." , "Notice");
-            }
+
             id = "";
             descrip = "";
             year = "";
             unit = "";
+        }
+
+        void add_deleted_Count()
+        {
+            get_no_of_Action();
+            string Table = "no_of_action ";
+            string Col_id = "deleted='";
+            string QUERY = " UPDATE " + Table + " SET " + Col_id + ++deleted + "'";
+            MySqlCommand cmd = new MySqlCommand(QUERY, CONNECTION);
+            cmd.ExecuteNonQuery();
+        }
+
+        void get_no_of_Action()
+        {
+            string Table = "no_of_action ";
+            string QUERY = "SELECT deleted FROM " + Table;
+            MySqlCommand cmd = new MySqlCommand(QUERY, CONNECTION);
+            MySqlDataReader reader = cmd.ExecuteReader();
+
+            while (reader.Read())
+            {
+                deleted = int.Parse(reader.GetString(0));
+            }
+            reader.Close();
         }
 
 
@@ -195,7 +217,6 @@ namespace Admin
 
 
 
-
         public Subject()
         {
             InitializeComponent();
@@ -254,7 +275,6 @@ namespace Admin
 
         private void subject_table_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
-
         }
 
 

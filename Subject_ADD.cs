@@ -20,7 +20,7 @@ namespace Admin
         MySqlConnection CONNECTION = new MySqlConnection();
         public string id = "", year = "", descrip = "", unit = "";
         public string updated_id = "", updated_year = "", updated_descrip = "", updated_unit = "";
-        
+        int added;
 
         private void connect_To_Database()
         {
@@ -44,6 +44,30 @@ namespace Admin
 
         }
 
+        void add_added_Count()
+        {
+            get_no_of_Action();
+            string Table = "no_of_action ";
+            string Col_id = "added='";
+            string QUERY = " UPDATE " + Table + " SET " + Col_id + ++added + "'";
+            MySqlCommand cmd = new MySqlCommand(QUERY, CONNECTION);
+            cmd.ExecuteNonQuery();
+        }
+
+        void get_no_of_Action()
+        {
+            string Table = "no_of_action ";
+            string QUERY = "SELECT added FROM " + Table;
+            MySqlCommand cmd = new MySqlCommand(QUERY, CONNECTION);
+            MySqlDataReader reader = cmd.ExecuteReader();
+
+            while (reader.Read())
+            {
+                added = int.Parse(reader.GetString(0));
+            }
+            reader.Close();
+        }
+
         bool is_Valid_ID(string newid)
         {
             string regexPattern = "^1[0-9]{3}$";
@@ -63,7 +87,6 @@ namespace Admin
 
         private void add_Data()
         {
-
             if (is_field_Empty())
             {
                 MessageBox.Show("Please fill all form..", "Notice");
@@ -95,12 +118,12 @@ namespace Admin
                 string Col_year = "year";
                 string Value_id = id_textbox.Text;
                 string Value_desc = organize_Desciption_Name(description_textbox.Text);
-                string Value_year = year_textbox.Text;
-                string Value_unit = unit_textbox.Text;
+                string Value_year = year_textbox.Text[0].ToString();
+                string Value_unit = unit_textbox.Text[0].ToString();
 
-
+                add_added_Count();
                 string COLUMNS = Col_id + Col_desc + Col_unit + Col_year;
-                string VALUES = Value_id + "','" + Value_desc + "','" + Value_unit + "','" + Value_unit;
+                string VALUES = Value_id + "','" + Value_desc + "','" + Value_unit + "','" + Value_year;
 
                 string QUERY = " INSERT INTO " + Table + " (" + COLUMNS + ") VALUES ('" + VALUES + "')";
 
@@ -127,6 +150,8 @@ namespace Admin
 
         string organize_Desciption_Name(string name)
         {
+            name = name.Trim();
+            name = name.ToLower();
             CultureInfo cultureInfo = System.Threading.Thread.CurrentThread.CurrentCulture;
             TextInfo textInfo = cultureInfo.TextInfo;
             name = textInfo.ToTitleCase(name);
@@ -148,19 +173,26 @@ namespace Admin
 
         bool is_Unique_ID(string newid)
         {
-            string Table = "subject_tbl ";
-            string Col_id = "id='";
-            string QUERY = "SELECT id FROM " + Table + " WHERE " + Col_id + newid + "' AND id <> '" + id + "'";
-            MySqlCommand cmd = new MySqlCommand(QUERY, CONNECTION);
-            MySqlDataReader reader = cmd.ExecuteReader();
-
-            while (reader.Read())
+            try
             {
+                string Table = "subject_tbl ";
+                string Col_id = "id=";
+                string QUERY = "SELECT id FROM " + Table + " WHERE " + Col_id + newid + "";
+                MySqlCommand cmd = new MySqlCommand(QUERY, CONNECTION);
+                MySqlDataReader reader = cmd.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    reader.Close();
+                    return false;
+                }
                 reader.Close();
+                return true;
+            }
+            catch (Exception e)
+            {
                 return false;
             }
-            reader.Close();
-            return true;
         }
 
 
@@ -193,6 +225,11 @@ namespace Admin
         }
 
         private void label1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label4_Click(object sender, EventArgs e)
         {
 
         }
@@ -233,7 +270,11 @@ namespace Admin
 
         private void iconButton1_Click(object sender, EventArgs e)
         {
-            this.Close();
+            DialogResult action = MessageBox.Show("Cancel adding subject?", "Note", MessageBoxButtons.YesNo);
+            if (action == DialogResult.Yes)
+            {
+                this.Close();
+            }
         }
 
 

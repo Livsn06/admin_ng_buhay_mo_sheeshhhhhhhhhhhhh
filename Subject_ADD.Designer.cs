@@ -211,6 +211,7 @@
             this.label4.Text = "Adding Subject";
             this.label4.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             this.label4.UseCompatibleTextRendering = true;
+            this.label4.Click += new System.EventHandler(this.label4_Click);
             // 
             // cancel_button
             // 
